@@ -41,19 +41,12 @@ class DataCollatorCTCWithPadding:
     pad_to_multiple_of_labels: Optional[int] = None
 
     def __call__(self, features: List[Dict[str, Union[List[int], torch.Tensor]]]) -> Dict[str, torch.Tensor]:
-        # split inputs and labels since they have to be of different lenghts and need
-        # different padding methods
-
+    
         input_features = [{"input_values": feature["input_values"]} for feature in features]
         label_to_numeric = {"Baiano":0,"Carioca":1,"Fluminense":2,"Mineiro":3,"Nordestino":4,"Sulista":5}
 
-        #def onehot(lbl):
-        #    onehot = [0] * NUMBER_OF_CLASSES
-        #    onehot[int(lbl)] = 1
-        #    return onehot
         def onehot(lbl):
             return int(lbl)
-        #output_features = [onehot(feature["labels"]) for feature in features]
         output_features = [onehot(label_to_numeric[feature["labels"]]) for feature in features]
 
         batch = self.feature_extractor.pad(
@@ -63,10 +56,5 @@ class DataCollatorCTCWithPadding:
             pad_to_multiple_of=self.pad_to_multiple_of,
             return_tensors="pt",
         )
-        # for val in batch['input_values']:
-        #   print(val[:10])
-        #   print(val[-10:])
-        # print(batch['input_values'].shape)
         batch["labels"] = torch.tensor(output_features)
-        # print(batch["labels"].argmax(-1))
         return batch

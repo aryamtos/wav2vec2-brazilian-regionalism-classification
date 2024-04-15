@@ -9,11 +9,23 @@ from transformers import (
 )
 from transformers import Trainer
 import torch
+from torch import nn
 
 
 
 model_id="ariamtos/wav2vec2-large-xlsr-fine-tuning-brazilian-portuguese"
 model_name = model_id.split("/")[-1]
+
+
+class WeightedLossTrainer(Trainer):
+    def compute_loss(self, model, inputs, class_weights, return_outputs=False):
+        #labels = inputs.pop("labels")
+        outputs = model(**inputs)
+        logits = outputs.get("logits")
+        labels = inputs.get("labels")
+        loss_func = nn.CrossEntropyLoss(weight=class_weights)
+        loss = loss_func(logits.view(-1, self.model.config.num_labels), labels.view(-1))
+        return (loss, outputs) if return_outputs else loss
 
 def training():
 

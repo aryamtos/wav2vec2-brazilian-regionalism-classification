@@ -1,15 +1,14 @@
 
-is_regression = False
-
 import numpy as np
 from transformers import EvalPrediction
+from sklearn.metrics import balanced_accuracy_score,f1_score,recall_score
 
+is_regression=False
 
-def compute_metrics(p: EvalPrediction):
-    preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
-    preds = np.squeeze(preds) if is_regression else np.argmax(preds, axis=1)
-
-    if is_regression:
-        return {"mse": ((preds - p.label_ids) ** 2).mean().item()}
-    else:
-        return {"accuracy": (preds == p.label_ids).astype(np.float32).mean().item()}
+def compute_metrics(pred):
+    labels = pred.label_ids
+    preds = pred.predictions.argmax(-1)
+    f1 = f1_score(labels,preds,average='weighted')
+    recall = recall_score(labels,preds,average='weighted')
+    accuracy = balanced_accuracy_score(labels,preds)
+    return {"accuracy": accuracy, "f1": f1, "recall": recall}

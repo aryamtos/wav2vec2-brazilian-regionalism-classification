@@ -12,7 +12,7 @@ import sys
 #import librosa
 from utils.data import preprocess_data, split_and_concat_data
 from model.speech_classifier import Wav2Vec2ForSpeechClassification
-from model.training import training
+from model.training import training, WeightedLossTrainer
 from model.metrics import compute_metrics
 from model.data_collactor import DataCollatorCTCWithPadding
 from dataloader import get_label_list,create_config, create_feature_extractor,speech_file_to_array_fn,prepare_dataset
@@ -83,7 +83,7 @@ def train(args):
     
     training_args=training()
     model.freeze_feature_extractor()
-    trainer = Trainer(
+    trainer = WeightedLossTrainer(
         model=model,
         data_collator=data_collator,
         args=training_args,
